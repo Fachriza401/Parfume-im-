@@ -69,8 +69,9 @@ class ReportController extends Controller
             ->select([
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('COUNT(*) as orders'),
-                DB::raw('SUM(CASE WHEN status_payment = ? THEN final_amount ELSE 0 END) as revenue', [PaymentStatus::PAID->value]),
             ])
+            // DB::raw() ignores bindings, so the parameterised column must use selectRaw().
+            ->selectRaw('SUM(CASE WHEN status_payment = ? THEN final_amount ELSE 0 END) as revenue', [PaymentStatus::PAID->value])
             ->whereBetween('created_at', [$from, $to])
             ->groupBy('date')
             ->orderBy('date')
